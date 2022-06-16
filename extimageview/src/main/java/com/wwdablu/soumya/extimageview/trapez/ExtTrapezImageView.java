@@ -1,10 +1,12 @@
 package com.wwdablu.soumya.extimageview.trapez;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
@@ -13,6 +15,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 import com.wwdablu.soumya.extimageview.BaseExtImageView;
+import com.wwdablu.soumya.extimageview.R;
 import com.wwdablu.soumya.extimageview.Result;
 
 import java.util.ArrayList;
@@ -25,20 +28,23 @@ public class ExtTrapezImageView extends BaseExtImageView {
     private static final int BOTTOM_LEFT = 2;
     private static final int BOTTOM_RIGHT = 3;
 
+    private static final int ANCHOR_SIZE_DP = 16;
+    private static final int LINE_WIDTH_DP = 3;
+
     private TouchItem mTouchItem;
 
-    private List<Point> mAnchorPoints;
+    private final List<Point> mAnchorPoints;
 
-    private Paint mAnchorPainter;
-    private Paint mConnectingLinePainter;
-    private Paint mBitmapPainter;
+    private final Paint mAnchorPainter;
+    private final Paint mPaintFrame;
+    private final Paint mBitmapPainter;
 
     private int mViewWidth;
     private int mViewHeight;
 
     private float mLastX;
     private float mLastY;
-    private float mAnchorSize;
+    private final float mAnchorSize;
 
     public ExtTrapezImageView(Context context) {
         this(context, null);
@@ -52,21 +58,24 @@ public class ExtTrapezImageView extends BaseExtImageView {
         super(context, attrs, defStyleAttr);
 
         mAnchorPoints = new ArrayList<>(4);
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             mAnchorPoints.add(new Point(0, 0));
         }
 
         float density = getDensity();
-        mAnchorSize = (density * Constants.ANCHOR_SIZE_DP);
+        mAnchorSize = (density * ANCHOR_SIZE_DP);
 
         mTouchItem = TouchItem.NONE;
 
+        int color = context.getColor(R.color.mango);
         mAnchorPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mAnchorPainter.setColor(Constants.ANCHOR_COLOR);
+        mAnchorPainter.setColor(color);
 
-        mConnectingLinePainter = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mConnectingLinePainter.setColor(Constants.WIDTH_LINE_COLOR);
-        mConnectingLinePainter.setStrokeWidth(density * Constants.LINE_WIDTH_DP);
+        mPaintFrame = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaintFrame.setColor(color);
+        mPaintFrame.setStrokeWidth(density * LINE_WIDTH_DP);
+        mPaintFrame.setStrokeJoin(Paint.Join.ROUND);
+        mPaintFrame.setStrokeCap(Paint.Cap.ROUND);
 
         mBitmapPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
     }
@@ -143,7 +152,7 @@ public class ExtTrapezImageView extends BaseExtImageView {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        if(getDrawable() != null) {
+        if (getDrawable() != null) {
             prepareLayout(mViewWidth, mViewHeight);
         }
     }
@@ -155,10 +164,12 @@ public class ExtTrapezImageView extends BaseExtImageView {
 
         PointF coor = getImageContentStartCoordinate();
         canvas.drawBitmap(mDisplayedBitmap, coor.x, coor.y, mBitmapPainter);
+        drawOverlay(canvas);
 
         drawConnectedAnchors(canvas);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -203,21 +214,13 @@ public class ExtTrapezImageView extends BaseExtImageView {
 
         if (anchorIndex == TOP_LEFT) {
             mTouchItem = TouchItem.SELECTOR_TL;
-        }
-
-        else if (anchorIndex == TOP_RIGHT) {
+        } else if (anchorIndex == TOP_RIGHT) {
             mTouchItem = TouchItem.SELECTOR_TR;
-        }
-
-        else if (anchorIndex == BOTTOM_LEFT) {
+        } else if (anchorIndex == BOTTOM_LEFT) {
             mTouchItem = TouchItem.SELECTOR_BL;
-        }
-
-        else if (anchorIndex == BOTTOM_RIGHT) {
+        } else if (anchorIndex == BOTTOM_RIGHT) {
             mTouchItem = TouchItem.SELECTOR_BR;
-        }
-
-        else {
+        } else {
             mTouchItem = TouchItem.NONE;
         }
     }
@@ -228,10 +231,10 @@ public class ExtTrapezImageView extends BaseExtImageView {
     private int getSelectedAnchorIndex(float touchX, float touchY) {
 
         int index = 0;
-        for(Point anchorPoint : mAnchorPoints) {
+        for (Point anchorPoint : mAnchorPoints) {
 
             if (((touchX >= (anchorPoint.x - mAnchorSize)) && (touchX <= (anchorPoint.x + mAnchorSize)))
-             && ((touchY >= (anchorPoint.y - mAnchorSize)) && (touchY <= (anchorPoint.y + mAnchorSize)))) {
+                    && ((touchY >= (anchorPoint.y - mAnchorSize)) && (touchY <= (anchorPoint.y + mAnchorSize)))) {
                 return index;
             }
 
@@ -246,7 +249,7 @@ public class ExtTrapezImageView extends BaseExtImageView {
      */
     private void handleAnchorMove(MotionEvent e) {
 
-        if(mTouchItem == TouchItem.NONE) {
+        if (mTouchItem == TouchItem.NONE) {
             return;
         }
 
@@ -271,7 +274,7 @@ public class ExtTrapezImageView extends BaseExtImageView {
                 break;
         }
 
-        if(anchorPoint == null) {
+        if (anchorPoint == null) {
             return;
         }
 
@@ -300,13 +303,13 @@ public class ExtTrapezImageView extends BaseExtImageView {
         float maxRight = maxLeft + mDisplayedBitmap.getWidth();
         float maxBottom = maxTop + mDisplayedBitmap.getHeight();
 
-        if(anchorPoint.x < maxLeft) {
+        if (anchorPoint.x < maxLeft) {
             anchorPoint.x = (int) Math.floor(maxLeft);
         } else if (anchorPoint.x > maxRight) {
             anchorPoint.x = (int) Math.floor(maxRight);
         }
 
-        if(anchorPoint.y < maxTop) {
+        if (anchorPoint.y < maxTop) {
             anchorPoint.y = (int) Math.floor(maxTop);
         } else if (anchorPoint.y > maxBottom) {
             anchorPoint.y = (int) Math.floor(maxBottom);
@@ -346,28 +349,48 @@ public class ExtTrapezImageView extends BaseExtImageView {
      */
     private void drawConnectedAnchors(@NonNull Canvas canvas) {
 
-        if(mAnchorPoints.get(0) == null) {
+        if (mAnchorPoints.get(0) == null) {
             return;
         }
 
-        for(Point anchorPoint : mAnchorPoints) {
+        for (Point anchorPoint : mAnchorPoints) {
             canvas.drawCircle(anchorPoint.x, anchorPoint.y, mAnchorSize, mAnchorPainter);
         }
 
         Point startPoint = mAnchorPoints.get(TOP_LEFT);
         Point endPoint = mAnchorPoints.get(TOP_RIGHT);
-        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mConnectingLinePainter);
+        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mPaintFrame);
 
         startPoint = mAnchorPoints.get(TOP_RIGHT);
         endPoint = mAnchorPoints.get(BOTTOM_RIGHT);
-        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mConnectingLinePainter);
+        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mPaintFrame);
 
         startPoint = mAnchorPoints.get(BOTTOM_RIGHT);
         endPoint = mAnchorPoints.get(BOTTOM_LEFT);
-        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mConnectingLinePainter);
+        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mPaintFrame);
 
         startPoint = mAnchorPoints.get(BOTTOM_LEFT);
         endPoint = mAnchorPoints.get(TOP_LEFT);
-        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mConnectingLinePainter);
+        canvas.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y, mPaintFrame);
+    }
+
+    private void drawOverlay(Canvas canvas) {
+        Path edgePath = new Path();
+
+        Point topLeft = mAnchorPoints.get(TOP_LEFT);
+        Point topRight = mAnchorPoints.get(TOP_RIGHT);
+        Point bottomRight = mAnchorPoints.get(BOTTOM_RIGHT);
+        Point bottomLeft = mAnchorPoints.get(BOTTOM_LEFT);
+
+        edgePath.moveTo(topLeft.x, topLeft.y);
+        edgePath.lineTo(topRight.x, topRight.y);
+        edgePath.lineTo(bottomRight.x, bottomRight.y);
+        edgePath.lineTo(bottomLeft.x, bottomLeft.y);
+        edgePath.close();
+
+        canvas.save();
+        canvas.clipPath(edgePath);
+        canvas.drawColor(getContext().getColor(R.color.mango_30));
+        canvas.restore();
     }
 }
