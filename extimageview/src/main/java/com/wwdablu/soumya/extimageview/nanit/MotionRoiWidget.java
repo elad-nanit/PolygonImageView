@@ -12,6 +12,7 @@ import android.graphics.Region;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,7 +26,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     private static final float LINE_WIDTH = 3f;
 
-    private static float ROI_HANDLE_RADIUS;
+    public static float ROI_HANDLE_RADIUS;
     public static float ROI_MARGINS;
     private static final int HANDLE_ACTIVE_RADIUS = 110;
     private final Paint paint = new Paint();
@@ -110,7 +111,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         Handle selHandle = getSelectedHandle(event.getX(), event.getY());
 
         if (selHandle != null) {
-            updateRoiCoords(selHandle, dx, dy);
+            MotionRoiHelperKt.updateRoiCoordinates(this, selHandle, topLeft, topRight, bottomLeft, bottomRight, dx, dy);
         }
     }
 
@@ -203,7 +204,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         bottomLeft = new PointF(start.x, end.y);
         bottomRight = new PointF(end.x, end.y);
 
-        refreshDisplay();
+        invalidate();
         initCoords = null;
     }
 
@@ -253,6 +254,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
         ROI_HANDLE_RADIUS = GeneralUtilities.dpsToPixels(getContext(), 7f);
         ROI_MARGINS = (float) (1.5 * ROI_HANDLE_RADIUS);
+        Log.d("Elad_", "ROI_HANDLE_RADIUS " + ROI_HANDLE_RADIUS);
     }
 
     @Override
@@ -290,65 +292,11 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
     public void showRoi() {
         // called when entering live stream mode
         shouldDraw = true;
-        refreshDisplay();
+        invalidate();
     }
 
     public MotionRoiCoords getMotionRoiCoords() {
         return deductMarginTransform(start.x, start.y, end.x, end.y);
-    }
-
-    private void updateRoiCoords(Handle selHandle, float dx, float dy) {
-        float startx = start.x;
-        float starty = start.y;
-        float endx = end.x;
-        float endy = end.y;
-
-        switch (selHandle) {
-            case TopLeft:
-//                startx += dx;
-//                starty += dy;
-                topLeft.offset(dx, dy);
-                break;
-            case BottomLeft:
-//                startx += dx;
-//                endy += dy;
-                bottomLeft.offset(dx, dy);
-                break;
-            case TopRight:
-//                endx += dx;
-//                starty += dy;
-                topRight.offset(dx, dy);
-                break;
-            case BottomRight:
-//                endx += dx;
-//                endy += dy;
-                bottomRight.offset(dx, dy);
-                break;
-            case InsideArea:
-//                startx += dx;
-//                starty += dy;
-//                endx += dx;
-//                endy += dy;
-                topLeft.offset(dx, dy);
-                bottomLeft.offset(dx, dy);
-                topRight.offset(dx, dy);
-                bottomRight.offset(dx, dy);
-                break;
-        }
-
-        refreshDisplay();
-
-//        if (isValidCoords(startx, starty, endx, endy)) {
-//            start.x = startx;
-//            start.y = starty;
-//            end.x = endx;
-//            end.y = endy;
-//            refreshDisplay();
-//        }
-    }
-
-    public void refreshDisplay() {
-        this.invalidate();
     }
 
     private boolean isValidCoords(double startX, double startY, double endX, double endY) {
