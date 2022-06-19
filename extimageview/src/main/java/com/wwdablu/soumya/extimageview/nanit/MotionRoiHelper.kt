@@ -1,5 +1,6 @@
 package com.wwdablu.soumya.extimageview.nanit
 
+import android.graphics.Path
 import android.graphics.PointF
 import android.view.View
 
@@ -48,3 +49,19 @@ internal fun validateInArea(
     return result
 
 }
+
+internal fun updateRoiCoordinates(selectedHandle: MotionRoiWidget.Handle, dx: Float, dy: Float) {
+
+
+}
+
+
+internal fun getPolygonPath(topLeft: PointF, topRight: PointF, bottomRight: PointF, bottomLeft: PointF): Path =
+    Path().apply {
+        moveTo(topLeft.x, topLeft.y)
+        lineTo(topRight.x, topRight.y)
+        lineTo(bottomRight.x, bottomRight.y)
+        lineTo(bottomLeft.x, bottomLeft.y)
+        close()
+    }
+

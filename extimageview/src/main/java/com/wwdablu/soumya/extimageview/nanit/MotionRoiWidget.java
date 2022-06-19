@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.Region;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -41,6 +43,9 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
     private PointF topRight;
     private PointF bottomRight;
     private PointF bottomLeft;
+
+    RectF boundingRect = new RectF();
+    Region insideAreaRegion = new Region();
 
     private MotionRoiCoords initCoords;
 
@@ -266,45 +271,21 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         canvas.drawLine(bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, paint);
         canvas.drawLine(bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, paint);
 
-//        canvas.drawLine(start.x, start.y, start.x, end.y, paint);
-//        canvas.drawLine(end.x, start.y, end.x, end.y, paint);
-//        canvas.drawLine(start.x, start.y, end.x, start.y, paint);
-//        canvas.drawLine(start.x, end.y, end.x, end.y, paint);
-
         // handles
-
         canvas.drawCircle(topLeft.x, topLeft.y, ROI_HANDLE_RADIUS, paint);
         canvas.drawCircle(topRight.x, topRight.y, ROI_HANDLE_RADIUS, paint);
         canvas.drawCircle(bottomRight.x, bottomRight.y, ROI_HANDLE_RADIUS, paint);
         canvas.drawCircle(bottomLeft.x, bottomLeft.y, ROI_HANDLE_RADIUS, paint);
 
-//        canvas.drawCircle(start.x, start.y, ROI_HANDLE_RADIUS, paint);
-//        canvas.drawCircle(start.x, end.y, ROI_HANDLE_RADIUS, paint);
-//        canvas.drawCircle(end.x, start.y, ROI_HANDLE_RADIUS, paint);
-//        canvas.drawCircle(end.x, end.y, ROI_HANDLE_RADIUS, paint);
-
         // inner area
-//        int origAlpha = paint.getAlpha();
-//        paint.setAlpha(INNER_ALPHA_LEVEL);
-//        try {
-//            canvas.drawRect(start.x, start.y, end.x, end.y, paint);
-//        } finally {
-//            paint.setAlpha(origAlpha);
-//        }
-
         drawOverlay(canvas);
     }
 
     private void drawOverlay(Canvas canvas) {
-        Path edgePath = new Path();
-        edgePath.moveTo(topLeft.x, topLeft.y);
-        edgePath.lineTo(topRight.x, topRight.y);
-        edgePath.lineTo(bottomRight.x, bottomRight.y);
-        edgePath.lineTo(bottomLeft.x, bottomLeft.y);
-        edgePath.close();
+        Path polygonPath = MotionRoiHelperKt.getPolygonPath(topLeft, topRight, bottomRight, bottomLeft);
 
         canvas.save();
-        canvas.clipPath(edgePath);
+        canvas.clipPath(polygonPath);
         canvas.drawColor(getContext().getColor(R.color.mango_30));
         canvas.restore();
     }
@@ -318,6 +299,10 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     public MotionRoiCoords getMotionRoiCoords() {
         return deductMarginTransform(start.x, start.y, end.x, end.y);
+    }
+
+    private void updateRoiCoords2(Handle selHandle, float dx, float dy) {
+
     }
 
     private void updateRoiCoords(Handle selHandle, float dx, float dy) {
@@ -398,23 +383,6 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     @Nullable
     private Handle getSelectedHandle(float touchX, float touchY) {
-
-//        if (isAdjacent(touchX, start.x) && isAdjacent(touchY, start.y)) {
-//            return Handle.TopLeft;
-//        }
-//        if (isAdjacent(touchX, start.x) && isAdjacent(touchY, end.y)) {
-//            return Handle.BottomLeft;
-//        }
-//        if (isAdjacent(touchX, end.x) && isAdjacent(touchY, start.y)) {
-//            return Handle.TopRight;
-//        }
-//        if (isAdjacent(touchX, end.x) && isAdjacent(touchY, end.y)) {
-//            return Handle.BottomRight;
-//        }
-//        if (start.x < touchX && touchX < end.x && start.y < touchY && touchY < end.y) {
-//            return Handle.InsideArea;
-//        }
-
         if (isAdjacent(touchX, topLeft.x) && isAdjacent(touchY, topLeft.y)) {
             return Handle.TopLeft;
         }
@@ -427,14 +395,16 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         if (isAdjacent(touchX, bottomRight.x) && isAdjacent(touchY, bottomRight.y)) {
             return Handle.BottomRight;
         }
-        //todo: should be re-calculated
-        if (topLeft.x < touchX && touchX < topRight.x && topLeft.y < touchY && touchY < bottomLeft.y) {
+        Path polygonPath = MotionRoiHelperKt.getPolygonPath(topLeft, topRight, bottomRight, bottomLeft);
+        polygonPath.computeBounds(boundingRect, true);
+        insideAreaRegion.setPath(polygonPath, new Region((int) boundingRect.left, (int) boundingRect.top, (int) boundingRect.right, (int) boundingRect.bottom));
+        if (insideAreaRegion.contains((int) touchX, (int) touchY)) {
             return Handle.InsideArea;
         }
         return null;
     }
 
-    private enum Handle {TopLeft, BottomLeft, TopRight, BottomRight, InsideArea}
+    public enum Handle {TopLeft, BottomLeft, TopRight, BottomRight, InsideArea}
 
     public interface Listener {
         void onDoubleTap();
