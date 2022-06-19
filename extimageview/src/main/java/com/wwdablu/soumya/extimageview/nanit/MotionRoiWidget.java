@@ -6,6 +6,7 @@ import static java.lang.Math.abs;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -29,8 +30,8 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     private boolean shouldDraw;
 
-    private FloatPoint start;
-    private FloatPoint end;
+    private PointF start;
+    private PointF end;
 
     private MotionRoiCoords initCoords;
 
@@ -183,7 +184,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         if (initCoords == null) {
             return;
         }
-        FloatPoint[] postTrans = applyMarginTransform(initCoords);
+        PointF[] postTrans = applyMarginTransform(initCoords);
         start = postTrans[0];
         end = postTrans[1];
 
@@ -191,13 +192,13 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         initCoords = null;
     }
 
-    private FloatPoint[] applyMarginTransform(MotionRoiCoords coords) {
+    private PointF[] applyMarginTransform(MotionRoiCoords coords) {
         int width = getWidth();
         int height = getHeight();
         return applyMarginTransformWithDim(coords, width, height);
     }
 
-    private FloatPoint[] applyMarginTransformWithDim(MotionRoiCoords coords, int width, int height) {
+    private PointF[] applyMarginTransformWithDim(MotionRoiCoords coords, int width, int height) {
         float startx = (float) coords.x0;
         float starty = (float) coords.y0;
         float endx = (float) coords.x1;
@@ -209,8 +210,8 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         endx += ROI_MARGINS;
         endy += ROI_MARGINS;
 
-        FloatPoint _start = new FloatPoint(startx, starty);
-        FloatPoint _end = new FloatPoint(endx, endy);
+        PointF _start = new PointF(startx, starty);
+        PointF _end = new PointF(endx, endy);
 
         float widthWithMargins = width - 2 * ROI_MARGINS;
         float heightWithMargins = height - 2 * ROI_MARGINS;
@@ -220,7 +221,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         _end.x = forceMargins(_end.x, widthWithMargins);
         _end.y = forceMargins(_end.y, heightWithMargins);
 
-        return new FloatPoint[]{_start, _end};
+        return new PointF[]{_start, _end};
     }
 
     private void init() {
@@ -359,13 +360,4 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         void onDoubleTap();
     }
 
-    private static class FloatPoint {
-        public float x;
-        public float y;
-
-        /* pp */ FloatPoint(float x, float y) {
-            this.x = x;
-            this.y = y;
-        }
-    }
 }

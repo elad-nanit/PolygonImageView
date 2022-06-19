@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         final MotionRoiWidget motionRoiWidget = findViewById(R.id.iv_display_nanit);
 
-        motionRoiWidget.setInitialDimensions(new MotionRoiCoords(0, 0, 500, 500));
+        motionRoiWidget.setInitialDimensions(new MotionRoiCoords(0, 0, 800, 800));
 
         motionRoiWidget.registerListener(() -> {
 
