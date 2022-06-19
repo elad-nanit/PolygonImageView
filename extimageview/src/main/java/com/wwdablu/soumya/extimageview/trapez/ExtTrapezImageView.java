@@ -37,7 +37,6 @@ public class ExtTrapezImageView extends BaseExtImageView {
 
     private final Paint mAnchorPainter;
     private final Paint mPaintFrame;
-    private final Paint mBitmapPainter;
 
     private int mViewWidth;
     private int mViewHeight;
@@ -76,66 +75,6 @@ public class ExtTrapezImageView extends BaseExtImageView {
         mPaintFrame.setStrokeWidth(density * LINE_WIDTH_DP);
         mPaintFrame.setStrokeJoin(Paint.Join.ROUND);
         mPaintFrame.setStrokeCap(Paint.Cap.ROUND);
-
-        mBitmapPainter = new Paint(Paint.ANTI_ALIAS_FLAG);
-    }
-
-    @Override
-    public void crop(@Nullable Result<Void> result) {
-
-        getOriginalBitmap(new Result<Bitmap>() {
-            @Override
-            public void onComplete(Bitmap data) {
-                mExecutorService.execute(new OriginalBitmapCropper(data, mDisplayedBitmap, mAnchorPoints, new Result<Bitmap>() {
-                    @Override
-                    public void onComplete(Bitmap transformedOriginal) {
-                        saveOriginalBitmap(transformedOriginal, new Result<Void>() {
-                            @Override
-                            public void onComplete(Void data) {
-                                transformedOriginal.recycle();
-                                mExecutorService.execute(new DisplayBitmapCropper(mDisplayedBitmap, mAnchorPoints, new Result<Bitmap>() {
-                                    @Override
-                                    public void onComplete(Bitmap data) {
-                                        runOnUiThread(() -> setImageBitmap(data));
-                                        if (result != null) {
-                                            result.onComplete(null);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable throwable) {
-                                        if (result != null) {
-                                            result.onError(throwable);
-                                        }
-                                    }
-                                }, getImageContentStartCoordinate()));
-                            }
-
-                            @Override
-                            public void onError(Throwable throwable) {
-                                if (result != null) {
-                                    result.onError(throwable);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        if (result != null) {
-                            result.onError(throwable);
-                        }
-                    }
-                }, getImageContentStartCoordinate()));
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                if (result != null) {
-                    result.onError(throwable);
-                }
-            }
-        });
     }
 
     @Override
@@ -159,13 +98,7 @@ public class ExtTrapezImageView extends BaseExtImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-
-        canvas.drawColor(Color.BLACK);
-
-        PointF coor = getImageContentStartCoordinate();
-        canvas.drawBitmap(mDisplayedBitmap, coor.x, coor.y, mBitmapPainter);
         drawOverlay(canvas);
-
         drawConnectedAnchors(canvas);
     }
 
@@ -175,7 +108,6 @@ public class ExtTrapezImageView extends BaseExtImageView {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-
                 mLastX = event.getX();
                 mLastY = event.getY();
                 determineTouchedItem(event.getX(), event.getY());
@@ -287,33 +219,7 @@ public class ExtTrapezImageView extends BaseExtImageView {
         mLastX = e.getX();
         mLastY = e.getY();
 
-        ensureCropBoundsWhileUsingAnchor(anchorPoint);
         invalidate();
-    }
-
-    /*
-     * Ensure that the anchors are within the image
-     */
-    private void ensureCropBoundsWhileUsingAnchor(Point anchorPoint) {
-
-        PointF coor = getImageContentStartCoordinate();
-
-        float maxLeft = coor.x;
-        float maxTop = coor.y;
-        float maxRight = maxLeft + mDisplayedBitmap.getWidth();
-        float maxBottom = maxTop + mDisplayedBitmap.getHeight();
-
-        if (anchorPoint.x < maxLeft) {
-            anchorPoint.x = (int) Math.floor(maxLeft);
-        } else if (anchorPoint.x > maxRight) {
-            anchorPoint.x = (int) Math.floor(maxRight);
-        }
-
-        if (anchorPoint.y < maxTop) {
-            anchorPoint.y = (int) Math.floor(maxTop);
-        } else if (anchorPoint.y > maxBottom) {
-            anchorPoint.y = (int) Math.floor(maxBottom);
-        }
     }
 
     /*

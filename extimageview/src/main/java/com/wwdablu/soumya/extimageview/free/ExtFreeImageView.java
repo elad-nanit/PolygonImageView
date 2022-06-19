@@ -51,47 +51,47 @@ public class ExtFreeImageView extends BaseExtImageView {
     @Override
     public void crop(@Nullable Result<Void> result) {
 
-        getOriginalBitmap(new Result<Bitmap>() {
-            @Override
-            public void onComplete(Bitmap originalBitmap) {
-                mExecutorService.execute(new OriginalBitmapCropper(originalBitmap, mDisplayedBitmap,
-                        mPointCollector.asList(),
-                    new Result<Bitmap>() {
-                        @Override
-                        public void onComplete(Bitmap data) {
-
-                            //Save the bitmap
-                            saveOriginalBitmap(data, new Result<Void>() {
-                                @Override
-                                public void onComplete(Void vooid) {
-                                    cropDisplayBitmap(data, result);
-                                }
-
-                                @Override
-                                public void onError(Throwable throwable) {
-                                    if (result != null) {
-                                        result.onError(throwable);
-                                    }
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onError(Throwable throwable) {
-                            if (result != null) {
-                                result.onError(throwable);
-                            }
-                        }
-                    }));
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                if (result != null) {
-                    result.onError(throwable);
-                }
-            }
-        });
+//        getOriginalBitmap(new Result<Bitmap>() {
+//            @Override
+//            public void onComplete(Bitmap originalBitmap) {
+//                mExecutorService.execute(new OriginalBitmapCropper(originalBitmap, mDisplayedBitmap,
+//                        mPointCollector.asList(),
+//                    new Result<Bitmap>() {
+//                        @Override
+//                        public void onComplete(Bitmap data) {
+//
+//                            //Save the bitmap
+//                            saveOriginalBitmap(data, new Result<Void>() {
+//                                @Override
+//                                public void onComplete(Void vooid) {
+//                                    cropDisplayBitmap(data, result);
+//                                }
+//
+//                                @Override
+//                                public void onError(Throwable throwable) {
+//                                    if (result != null) {
+//                                        result.onError(throwable);
+//                                    }
+//                                }
+//                            });
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable throwable) {
+//                            if (result != null) {
+//                                result.onError(throwable);
+//                            }
+//                        }
+//                    }));
+//            }
+//
+//            @Override
+//            public void onError(Throwable throwable) {
+//                if (result != null) {
+//                    result.onError(throwable);
+//                }
+//            }
+//        });
     }
 
     /**
@@ -132,12 +132,12 @@ public class ExtFreeImageView extends BaseExtImageView {
 
         canvas.drawColor(Color.BLACK);
 
-        if(mDisplayedBitmap == null || mDisplayedBitmap.isRecycled()) {
-            return;
-        }
-
-        PointF coor = getImageContentStartCoordinate();
-        canvas.drawBitmap(mDisplayedBitmap, coor.x, coor.y, mBitmapPainter);
+//        if(mDisplayedBitmap == null || mDisplayedBitmap.isRecycled()) {
+//            return;
+//        }
+//
+//        PointF coor = getImageContentStartCoordinate();
+//        canvas.drawBitmap(mDisplayedBitmap, coor.x, coor.y, mBitmapPainter);
     }
 
     @Override
@@ -175,17 +175,17 @@ public class ExtFreeImageView extends BaseExtImageView {
 
     private void drawPointersOnBitmap(CPoint point) {
 
-        if(mDisplayedBitmap == null || mDisplayedBitmap.isRecycled()) {
-            return;
-        }
-
-        if(point.isDrawn()) {
-            return;
-        }
-
-        if(mPointerCanvas == null) {
-            mPointerCanvas = new Canvas(mDisplayedBitmap);
-        }
+//        if(mDisplayedBitmap == null || mDisplayedBitmap.isRecycled()) {
+//            return;
+//        }
+//
+//        if(point.isDrawn()) {
+//            return;
+//        }
+//
+//        if(mPointerCanvas == null) {
+//            mPointerCanvas = new Canvas(mDisplayedBitmap);
+//        }
 
         mPointerCanvas.drawCircle(point.x, point.y, 10, mPointPainer);
         point.setDrawn();

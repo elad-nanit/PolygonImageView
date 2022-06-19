@@ -49,6 +49,11 @@ public final class ExtRectImageView extends BaseExtImageView {
 
     private Path mCropRegionPath;
 
+    @Override
+    public void crop(@Nullable Result<Void> result) {
+
+    }
+
     public ExtRectImageView(Context context) {
         this(context, null);
     }
@@ -168,64 +173,64 @@ public final class ExtRectImageView extends BaseExtImageView {
     /**
      * Crop the image or bitmap once the selection is confirmed.
      */
-    @Override
-    public void crop(@Nullable Result<Void> result) {
-
-        getOriginalBitmap(new Result<Bitmap>() {
-            @Override
-            public void onComplete(Bitmap data) {
-                mExecutorService.execute(new OriginalBitmapCropper(data, mDisplayedBitmap, mFrameRect, new Result<Bitmap>() {
-                    @Override
-                    public void onComplete(Bitmap originalCropped) {
-
-                        saveOriginalBitmap(originalCropped, new Result<Void>() {
-                            @Override
-                            public void onComplete(Void data) {
-
-                                mExecutorService.execute(new DisplayBitmapCropper(mDisplayedBitmap, mFrameRect, new Result<Bitmap>() {
-                                    @Override
-                                    public void onComplete(Bitmap data) {
-                                        runOnUiThread(() -> setImageBitmap(data));
-                                        if (result != null) {
-                                            result.onComplete(null);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable throwable) {
-                                        if (result != null) {
-                                            result.onError(throwable);
-                                        }
-                                    }
-                                }));
-                            }
-
-                            @Override
-                            public void onError(Throwable throwable) {
-                                if (result != null) {
-                                    result.onError(throwable);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        if (result != null) {
-                            result.onError(throwable);
-                        }
-                    }
-                }, getImageContentStartCoordinate()));
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                if (result != null) {
-                    result.onError(throwable);
-                }
-            }
-        });
-    }
+//    @Override
+//    public void crop(@Nullable Result<Void> result) {
+//
+//        getOriginalBitmap(new Result<Bitmap>() {
+//            @Override
+//            public void onComplete(Bitmap data) {
+//                mExecutorService.execute(new OriginalBitmapCropper(data, mDisplayedBitmap, mFrameRect, new Result<Bitmap>() {
+//                    @Override
+//                    public void onComplete(Bitmap originalCropped) {
+//
+//                        saveOriginalBitmap(originalCropped, new Result<Void>() {
+//                            @Override
+//                            public void onComplete(Void data) {
+//
+//                                mExecutorService.execute(new DisplayBitmapCropper(mDisplayedBitmap, mFrameRect, new Result<Bitmap>() {
+//                                    @Override
+//                                    public void onComplete(Bitmap data) {
+//                                        runOnUiThread(() -> setImageBitmap(data));
+//                                        if (result != null) {
+//                                            result.onComplete(null);
+//                                        }
+//                                    }
+//
+//                                    @Override
+//                                    public void onError(Throwable throwable) {
+//                                        if (result != null) {
+//                                            result.onError(throwable);
+//                                        }
+//                                    }
+//                                }));
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable throwable) {
+//                                if (result != null) {
+//                                    result.onError(throwable);
+//                                }
+//                            }
+//                        });
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable throwable) {
+//                        if (result != null) {
+//                            result.onError(throwable);
+//                        }
+//                    }
+//                }, getImageContentStartCoordinate()));
+//            }
+//
+//            @Override
+//            public void onError(Throwable throwable) {
+//                if (result != null) {
+//                    result.onError(throwable);
+//                }
+//            }
+//        });
+//    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -254,24 +259,24 @@ public final class ExtRectImageView extends BaseExtImageView {
             return;
         }
 
-        if(mDisplayedBitmap != null && !mDisplayedBitmap.isRecycled()) {
-
-            PointF coor = getImageContentStartCoordinate();
-            canvas.drawBitmap(mDisplayedBitmap, coor.x, coor.y, mBitmapPainter);
-
-            /*
-             * Renders all the components which are required to select the crop region. It draws the
-             * translucent overlay, the transparent crop region and finally the anchors which defines
-             * the RECT for the crop region.
-             */
-            renderUncropRegionOverlay(canvas);
-            renderCropFrame(canvas);
-            renderAnchorPoints(canvas);
-
-            if (mShowGridLines) {
-                renderGridLines(canvas);
-            }
-        }
+//        if(mDisplayedBitmap != null && !mDisplayedBitmap.isRecycled()) {
+//
+//            PointF coor = getImageContentStartCoordinate();
+//            canvas.drawBitmap(mDisplayedBitmap, coor.x, coor.y, mBitmapPainter);
+//
+//            /*
+//             * Renders all the components which are required to select the crop region. It draws the
+//             * translucent overlay, the transparent crop region and finally the anchors which defines
+//             * the RECT for the crop region.
+//             */
+//            renderUncropRegionOverlay(canvas);
+//            renderCropFrame(canvas);
+//            renderAnchorPoints(canvas);
+//
+//            if (mShowGridLines) {
+//                renderGridLines(canvas);
+//            }
+//        }
     }
 
     @SuppressLint("ClickableViewAccessibility")

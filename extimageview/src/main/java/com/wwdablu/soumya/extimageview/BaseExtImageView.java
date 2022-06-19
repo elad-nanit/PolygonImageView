@@ -39,15 +39,17 @@ public abstract class BaseExtImageView extends AppCompatImageView {
     }
 
     private Matrix mMatrix;
-    private BitmapStorage mStorage;
+//    private BitmapStorage mStorage;
     private boolean mIsDisplayBitmapReady;
 
-    protected Bitmap mDisplayedBitmap;
+//    protected Bitmap mDisplayedBitmap;
 
     protected ExecutorService mExecutorService;
     private Handler mUIHandler;
 
-    public abstract void crop(@Nullable Result<Void> result);
+    public void crop(@Nullable Result<Void> result){
+
+    }
 
     public BaseExtImageView(Context context) {
         this(context, null, 0);
@@ -63,31 +65,6 @@ public abstract class BaseExtImageView extends AppCompatImageView {
         mExecutorService = Executors.newSingleThreadExecutor();
         mIsDisplayBitmapReady = false;
         mUIHandler = new Handler(Looper.getMainLooper());
-        mStorage = new BitmapStorage(context, "uid_" + System.currentTimeMillis());
-    }
-
-    @Override
-    public void setImageBitmap(Bitmap bm) {
-
-        if(!mIsDisplayBitmapReady) {
-            mDisplayedBitmap = bm;
-            if(!mStorage.isOriginalBitmapPresent()) {
-                mStorage.saveOriginalBitmap(mDisplayedBitmap, null);
-            }
-            return;
-        }
-
-        super.setImageBitmap(bm);
-
-        if(bm.equals(mDisplayedBitmap)) {
-            return;
-        }
-
-        if(mDisplayedBitmap != null && !mDisplayedBitmap.isRecycled()) {
-            mDisplayedBitmap.recycle();
-        }
-
-        mDisplayedBitmap = bm;
     }
 
     /**
@@ -97,12 +74,6 @@ public abstract class BaseExtImageView extends AppCompatImageView {
      */
     public final void getCroppedBitmap(@NonNull Result<Bitmap> result) {
 
-        if(mStorage == null) {
-            result.onError(new IllegalStateException("Invalid object"));
-            return;
-        }
-
-        mStorage.getOriginalBitmap(result);
     }
 
     /**
@@ -116,34 +87,9 @@ public abstract class BaseExtImageView extends AppCompatImageView {
     }
 
     protected final void getOriginalBitmap(@NonNull Result<Bitmap> result) {
-        mStorage.getOriginalBitmap(result);
     }
 
     protected final void saveOriginalBitmap(@NonNull Bitmap bitmap, @NonNull Result<Void> result) {
-        mStorage.saveOriginalBitmap(bitmap, result);
-    }
-
-    @Override
-    @CallSuper
-    protected void onFinishInflate() {
-
-        super.onFinishInflate();
-        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-
-                if(mDisplayedBitmap == null || mDisplayedBitmap.isRecycled() || getVisibility() == View.GONE) {
-                    return;
-                }
-
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                Bitmap scaled = scaleToFit(mDisplayedBitmap, getMeasuredWidth(), getMeasuredHeight());
-                mDisplayedBitmap.recycle();
-                mDisplayedBitmap = scaled;
-                mIsDisplayBitmapReady = true;
-                setImageBitmap(mDisplayedBitmap);
-            }
-        });
     }
 
     @Override
@@ -154,12 +100,6 @@ public abstract class BaseExtImageView extends AppCompatImageView {
             mExecutorService.shutdownNow();
         }
 
-        if(mDisplayedBitmap != null && !mDisplayedBitmap.isRecycled()) {
-            mDisplayedBitmap.recycle();
-            mDisplayedBitmap = null;
-        }
-
-        mStorage.deleteOriginalBitmap();
         super.onDetachedFromWindow();
     }
 
@@ -198,69 +138,10 @@ public abstract class BaseExtImageView extends AppCompatImageView {
     }
 
     protected final PointF getImageContentStartCoordinate() {
-
-        int idWidth = mDisplayedBitmap.getWidth();
-        int idHeight = mDisplayedBitmap.getHeight();
-
-        float left = 0;
-        float top = 0;
-
-        if(idWidth == getMeasuredWidth()) {
-            top = (getMeasuredHeight() - idHeight) >> 1;
-        } else {
-            left = (getMeasuredWidth() - idWidth) >> 1;
-        }
-
-        return new PointF(left, top);
+        return new PointF(0, 0);
     }
 
     private void saveOriginalBitmapRotation(Rotate by, Result<Void> result) {
 
-        mStorage.getOriginalBitmap(new Result<Bitmap>() {
-            @Override
-            public void onComplete(Bitmap bitmap) {
-                mExecutorService.execute(() -> {
-                    try {
-                        if(bitmap == null) {
-                            return;
-                        }
-
-                        mMatrix.reset();
-                        mMatrix.preRotate(by.value);
-
-                        Bitmap originalRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                                bitmap.getHeight(), mMatrix, true);
-
-                        bitmap.recycle();
-
-                        mStorage.saveOriginalBitmap(originalRotated, new Result<Void>() {
-                            @Override
-                            public void onComplete(Void data) {
-
-                                Bitmap bm = scaleToFit(originalRotated, getMeasuredWidth(), getMeasuredHeight());
-                                runOnUiThread(() -> setImageBitmap(bm));
-                                result.onComplete(null);
-                            }
-
-                            @Override
-                            public void onError(Throwable throwable) {
-                                Log.e(TAG, "Rotation failed internally. Output may be incorrect.");
-                                result.onError(throwable);
-                            }
-                        });
-
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Rotation failed internally. Output may be incorrect.");
-                        result.onError(ex);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                Log.e(TAG, "Could not retrieve the image. " + throwable.getMessage());
-                result.onError(throwable);
-            }
-        });
     }
 }
