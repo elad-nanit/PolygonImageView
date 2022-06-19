@@ -20,7 +20,7 @@ import android.view.WindowManager;
 
 import com.wwdablu.soumya.extimageview.R;
 
-public class MotionRoiWidget extends View implements View.OnTouchListener,
+public class PolygonMotionRoiWidget extends View implements View.OnTouchListener,
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener {
 
@@ -52,17 +52,17 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
     private float prevTouchY = Float.MAX_VALUE;
     private GestureDetector gestureDetector;
 
-    public MotionRoiWidget(Context context) {
+    public PolygonMotionRoiWidget(Context context) {
         super(context);
         init();
     }
 
-    public MotionRoiWidget(Context context, @Nullable AttributeSet attrs) {
+    public PolygonMotionRoiWidget(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public MotionRoiWidget(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public PolygonMotionRoiWidget(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -111,7 +111,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         Handle selHandle = getSelectedHandle(event.getX(), event.getY());
 
         if (selHandle != null) {
-            MotionRoiHelperKt.updateRoiCoordinates(this, selHandle, topLeft, topRight, bottomLeft, bottomRight, dx, dy);
+            PolygonMotionRoiHelperKt.updateRoiCoordinates(this, selHandle, topLeft, topRight, bottomLeft, bottomRight, dx, dy);
         }
     }
 
@@ -280,7 +280,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
     }
 
     private void drawOverlay(Canvas canvas) {
-        Path polygonPath = MotionRoiHelperKt.getPolygonPath(topLeft, topRight, bottomRight, bottomLeft);
+        Path polygonPath = PolygonMotionRoiHelperKt.getPolygonPath(topLeft, topRight, bottomRight, bottomLeft);
 
         canvas.save();
         canvas.clipPath(polygonPath);
@@ -337,7 +337,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         if (isAdjacent(touchX, bottomRight.x) && isAdjacent(touchY, bottomRight.y)) {
             return Handle.BottomRight;
         }
-        Path polygonPath = MotionRoiHelperKt.getPolygonPath(topLeft, topRight, bottomRight, bottomLeft);
+        Path polygonPath = PolygonMotionRoiHelperKt.getPolygonPath(topLeft, topRight, bottomRight, bottomLeft);
         polygonPath.computeBounds(boundingRect, true);
         insideAreaRegion.setPath(polygonPath, new Region((int) boundingRect.left, (int) boundingRect.top, (int) boundingRect.right, (int) boundingRect.bottom));
         if (insideAreaRegion.contains((int) touchX, (int) touchY)) {

@@ -39,7 +39,7 @@
         android:layout_alignParentTop="true"
         />
 
-    <com.wwdablu.soumya.extimageview.nanit.MotionRoiWidget
+    <com.wwdablu.soumya.extimageview.nanit.PolygonMotionRoiWidget
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/iv_display_nanit"

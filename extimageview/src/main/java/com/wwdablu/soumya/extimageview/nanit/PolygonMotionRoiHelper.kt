@@ -15,7 +15,7 @@ internal fun getPolygonPath(topLeft: PointF, topRight: PointF, bottomRight: Poin
 
 internal fun updateRoiCoordinates(
     motionRoi: View,
-    selectedHandle: MotionRoiWidget.Handle,
+    selectedHandle: PolygonMotionRoiWidget.Handle,
     topLeft: PointF,
     topRight: PointF,
     bottomLeft: PointF,
@@ -24,28 +24,28 @@ internal fun updateRoiCoordinates(
     dy: Float
 ) {
 
-    val maxWidth = motionRoi.width - MotionRoiWidget.ROI_MARGINS
-    val maxHeight = motionRoi.height - MotionRoiWidget.ROI_MARGINS
+    val maxWidth = motionRoi.width - PolygonMotionRoiWidget.ROI_MARGINS
+    val maxHeight = motionRoi.height - PolygonMotionRoiWidget.ROI_MARGINS
 
     when (selectedHandle) {
-        MotionRoiWidget.Handle.TopLeft -> {
+        PolygonMotionRoiWidget.Handle.TopLeft -> {
             topLeft.coerce(dx, dy, maxWidth, maxHeight)
         }
-        MotionRoiWidget.Handle.TopRight -> {
+        PolygonMotionRoiWidget.Handle.TopRight -> {
             topRight.coerce(dx, dy, maxWidth, maxHeight)
         }
-        MotionRoiWidget.Handle.BottomLeft -> {
+        PolygonMotionRoiWidget.Handle.BottomLeft -> {
             bottomLeft.coerce(dx, dy, maxWidth, maxHeight)
         }
-        MotionRoiWidget.Handle.BottomRight -> {
+        PolygonMotionRoiWidget.Handle.BottomRight -> {
             bottomRight.coerce(dx, dy, maxWidth, maxHeight)
         }
-        MotionRoiWidget.Handle.InsideArea -> {
+        PolygonMotionRoiWidget.Handle.InsideArea -> {
             val points = listOf(topLeft, topRight, bottomLeft, bottomRight)
             //by this check, we avoid situation that points are updated partially on being moved toward edges
             if (points.all {
-                    (it.x + dx) in MotionRoiWidget.ROI_MARGINS..maxWidth
-                            && (it.y + dy) in MotionRoiWidget.ROI_MARGINS..maxHeight
+                    (it.x + dx) in PolygonMotionRoiWidget.ROI_MARGINS..maxWidth
+                            && (it.y + dy) in PolygonMotionRoiWidget.ROI_MARGINS..maxHeight
                 }) {
                 topLeft.coerce(dx, dy, maxWidth, maxHeight)
                 topRight.coerce(dx, dy, maxWidth, maxHeight)
@@ -65,4 +65,4 @@ private fun PointF.coerce(dx: Float, dy: Float, width: Float, height: Float) {
 }
 
 private fun Float.coerced(size: Float): Float =
-    coerceAtLeast(MotionRoiWidget.ROI_MARGINS).coerceAtMost(size)
+    coerceAtLeast(PolygonMotionRoiWidget.ROI_MARGINS).coerceAtMost(size)

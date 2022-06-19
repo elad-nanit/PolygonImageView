@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
@@ -15,7 +14,7 @@ import com.wwdablu.soumya.extimageview.BaseExtImageView;
 import com.wwdablu.soumya.extimageview.Result;
 import com.wwdablu.soumya.extimageview.free.ExtFreeImageView;
 import com.wwdablu.soumya.extimageview.nanit.MotionRoiCoords;
-import com.wwdablu.soumya.extimageview.nanit.MotionRoiWidget;
+import com.wwdablu.soumya.extimageview.nanit.PolygonMotionRoiWidget;
 import com.wwdablu.soumya.extimageview.rect.CropMode;
 import com.wwdablu.soumya.extimageview.rect.ExtRectImageView;
 import com.wwdablu.soumya.extimageview.rect.GridMode;
@@ -62,17 +61,17 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_capture).setVisibility(View.GONE);
 
-        final MotionRoiWidget motionRoiWidget = findViewById(R.id.iv_display_nanit);
+        final PolygonMotionRoiWidget polygonMotionRoiWidget = findViewById(R.id.iv_display_nanit);
 
-        motionRoiWidget.setInitialDimensions(new MotionRoiCoords(0, 0, 800, 800));
+        polygonMotionRoiWidget.setInitialDimensions(new MotionRoiCoords(0, 0, 800, 800));
 
-        motionRoiWidget.registerListener(() -> {
+        polygonMotionRoiWidget.registerListener(() -> {
 
         });
 
-        motionRoiWidget.post(() -> {
-            motionRoiWidget.drawInitialCoords();
-            motionRoiWidget.showRoi();
+        polygonMotionRoiWidget.post(() -> {
+            polygonMotionRoiWidget.drawInitialCoords();
+            polygonMotionRoiWidget.showRoi();
         });
 
 
