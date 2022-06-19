@@ -1,6 +1,5 @@
 package com.wwdablu.soumya.extimageview.nanit;
 
-import static android.graphics.Color.parseColor;
 import static java.lang.Math.abs;
 
 import android.content.Context;
@@ -24,10 +23,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener {
 
-    private static final int ROI_COLOR = parseColor("#5fe4c2");
-
     private static final float LINE_WIDTH = 3f;
-    private static final int INNER_ALPHA_LEVEL = 57;
 
     private static float ROI_HANDLE_RADIUS;
     public static float ROI_MARGINS;
@@ -36,8 +32,8 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     private boolean shouldDraw;
 
-    private PointF start;
-    private PointF end;
+    private final PointF start = new PointF();
+    private final PointF end = new PointF();
 
     private PointF topLeft;
     private PointF topRight;
@@ -199,8 +195,8 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
             return;
         }
         PointF[] postTrans = applyMarginTransform(initCoords);
-        start = postTrans[0];
-        end = postTrans[1];
+        PointF start = postTrans[0];
+        PointF end = postTrans[1];
 
         topLeft = new PointF(start.x, start.y);
         topRight = new PointF(end.x, start.y);
@@ -261,7 +257,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     @Override
     public void onDraw(Canvas canvas) {
-        if (!shouldDraw || start == null || end == null || topLeft == null || topRight == null || bottomLeft == null || bottomRight == null) {
+        if (!shouldDraw || topLeft == null || topRight == null || bottomLeft == null || bottomRight == null) {
             return;
         }
 
@@ -299,10 +295,6 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     public MotionRoiCoords getMotionRoiCoords() {
         return deductMarginTransform(start.x, start.y, end.x, end.y);
-    }
-
-    private void updateRoiCoords2(Handle selHandle, float dx, float dy) {
-
     }
 
     private void updateRoiCoords(Handle selHandle, float dx, float dy) {
@@ -344,13 +336,15 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
                 break;
         }
 
-        if (isValidCoords(startx, starty, endx, endy)) {
-            start.x = startx;
-            start.y = starty;
-            end.x = endx;
-            end.y = endy;
-            refreshDisplay();
-        }
+        refreshDisplay();
+
+//        if (isValidCoords(startx, starty, endx, endy)) {
+//            start.x = startx;
+//            start.y = starty;
+//            end.x = endx;
+//            end.y = endy;
+//            refreshDisplay();
+//        }
     }
 
     public void refreshDisplay() {

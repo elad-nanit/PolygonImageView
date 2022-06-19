@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.iv_display_trapez).setVisibility(View.GONE);
         findViewById(R.id.iv_display_nanit).setVisibility(View.VISIBLE);
 
+        findViewById(R.id.btn_capture).setVisibility(View.GONE);
+
         final MotionRoiWidget motionRoiWidget = findViewById(R.id.iv_display_nanit);
 
         motionRoiWidget.setInitialDimensions(new MotionRoiCoords(0, 0, 800, 800));
