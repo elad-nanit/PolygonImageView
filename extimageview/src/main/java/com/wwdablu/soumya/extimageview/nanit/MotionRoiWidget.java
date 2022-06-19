@@ -6,13 +6,17 @@ import static java.lang.Math.abs;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 
+import com.wwdablu.soumya.extimageview.R;
 
 public class MotionRoiWidget extends View implements View.OnTouchListener,
         GestureDetector.OnGestureListener,
@@ -32,6 +36,11 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     private PointF start;
     private PointF end;
+
+    private PointF topLeft;
+    private PointF topRight;
+    private PointF bottomRight;
+    private PointF bottomLeft;
 
     private MotionRoiCoords initCoords;
 
@@ -188,6 +197,11 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         start = postTrans[0];
         end = postTrans[1];
 
+        topLeft = new PointF(start.x, start.y);
+        topRight = new PointF(end.x, start.y);
+        bottomLeft = new PointF(start.x, end.y);
+        bottomRight = new PointF(end.x, end.y);
+
         refreshDisplay();
         initCoords = null;
     }
@@ -225,8 +239,12 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
     }
 
     private void init() {
-        paint.setStrokeWidth(LINE_WIDTH);
-        paint.setColor(ROI_COLOR);
+        float density = getDensity();
+
+        paint.setStrokeWidth(density * LINE_WIDTH);
+
+        int color = getContext().getColor(R.color.mango);
+        paint.setColor(color);
         paint.setStyle(Paint.Style.FILL);
         this.setOnTouchListener(this);
         gestureDetector = new GestureDetector(getContext(), this);
@@ -238,21 +256,32 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
     @Override
     public void onDraw(Canvas canvas) {
-        if (!shouldDraw || start == null || end == null) {
+        if (!shouldDraw || start == null || end == null || topLeft == null || topRight == null || bottomLeft == null || bottomRight == null) {
             return;
         }
 
         // edges
-        canvas.drawLine(start.x, start.y, start.x, end.y, paint);
-        canvas.drawLine(end.x, start.y, end.x, end.y, paint);
-        canvas.drawLine(start.x, start.y, end.x, start.y, paint);
-        canvas.drawLine(start.x, end.y, end.x, end.y, paint);
+        canvas.drawLine(topLeft.x, topLeft.y, topRight.x, topRight.y, paint);
+        canvas.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y, paint);
+        canvas.drawLine(bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, paint);
+        canvas.drawLine(bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, paint);
+
+//        canvas.drawLine(start.x, start.y, start.x, end.y, paint);
+//        canvas.drawLine(end.x, start.y, end.x, end.y, paint);
+//        canvas.drawLine(start.x, start.y, end.x, start.y, paint);
+//        canvas.drawLine(start.x, end.y, end.x, end.y, paint);
 
         // handles
-        canvas.drawCircle(start.x, start.y, ROI_HANDLE_RADIUS, paint);
-        canvas.drawCircle(start.x, end.y, ROI_HANDLE_RADIUS, paint);
-        canvas.drawCircle(end.x, start.y, ROI_HANDLE_RADIUS, paint);
-        canvas.drawCircle(end.x, end.y, ROI_HANDLE_RADIUS, paint);
+
+        canvas.drawCircle(topLeft.x, topLeft.y, ROI_HANDLE_RADIUS, paint);
+        canvas.drawCircle(topRight.x, topRight.y, ROI_HANDLE_RADIUS, paint);
+        canvas.drawCircle(bottomRight.x, bottomRight.y, ROI_HANDLE_RADIUS, paint);
+        canvas.drawCircle(bottomLeft.x, bottomLeft.y, ROI_HANDLE_RADIUS, paint);
+
+//        canvas.drawCircle(start.x, start.y, ROI_HANDLE_RADIUS, paint);
+//        canvas.drawCircle(start.x, end.y, ROI_HANDLE_RADIUS, paint);
+//        canvas.drawCircle(end.x, start.y, ROI_HANDLE_RADIUS, paint);
+//        canvas.drawCircle(end.x, end.y, ROI_HANDLE_RADIUS, paint);
 
         // inner area
         int origAlpha = paint.getAlpha();
@@ -262,7 +291,24 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         } finally {
             paint.setAlpha(origAlpha);
         }
+
+        drawOverlay(canvas);
     }
+
+    private void drawOverlay(Canvas canvas) {
+        Path edgePath = new Path();
+        edgePath.moveTo(topLeft.x, topLeft.y);
+        edgePath.lineTo(topRight.x, topRight.y);
+        edgePath.lineTo(bottomRight.x, bottomRight.y);
+        edgePath.lineTo(bottomLeft.x, bottomLeft.y);
+        edgePath.close();
+
+        canvas.save();
+        canvas.clipPath(edgePath);
+        canvas.drawColor(getContext().getColor(R.color.mango_30));
+        canvas.restore();
+    }
+
 
     public void showRoi() {
         // called when entering live stream mode
@@ -360,4 +406,10 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         void onDoubleTap();
     }
 
+    protected final float getDensity() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                .getMetrics(displayMetrics);
+        return displayMetrics.density;
+    }
 }
