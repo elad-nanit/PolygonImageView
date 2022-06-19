@@ -28,7 +28,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
     private static final int INNER_ALPHA_LEVEL = 57;
 
     private static float ROI_HANDLE_RADIUS;
-    private static float ROI_MARGINS;
+    public static float ROI_MARGINS;
     private static final int HANDLE_ACTIVE_RADIUS = 110;
     private final Paint paint = new Paint();
 
@@ -284,13 +284,13 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 //        canvas.drawCircle(end.x, end.y, ROI_HANDLE_RADIUS, paint);
 
         // inner area
-        int origAlpha = paint.getAlpha();
-        paint.setAlpha(INNER_ALPHA_LEVEL);
-        try {
-            canvas.drawRect(start.x, start.y, end.x, end.y, paint);
-        } finally {
-            paint.setAlpha(origAlpha);
-        }
+//        int origAlpha = paint.getAlpha();
+//        paint.setAlpha(INNER_ALPHA_LEVEL);
+//        try {
+//            canvas.drawRect(start.x, start.y, end.x, end.y, paint);
+//        } finally {
+//            paint.setAlpha(origAlpha);
+//        }
 
         drawOverlay(canvas);
     }
@@ -320,7 +320,7 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         return deductMarginTransform(start.x, start.y, end.x, end.y);
     }
 
-    private void updateRoiCoords(Handle selHandle, double dx, double dy) {
+    private void updateRoiCoords(Handle selHandle, float dx, float dy) {
         float startx = start.x;
         float starty = start.y;
         float endx = end.x;
@@ -328,26 +328,34 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
 
         switch (selHandle) {
             case TopLeft:
-                startx += dx;
-                starty += dy;
+//                startx += dx;
+//                starty += dy;
+                topLeft.offset(dx, dy);
                 break;
             case BottomLeft:
-                startx += dx;
-                endy += dy;
+//                startx += dx;
+//                endy += dy;
+                bottomLeft.offset(dx, dy);
                 break;
             case TopRight:
-                endx += dx;
-                starty += dy;
+//                endx += dx;
+//                starty += dy;
+                topRight.offset(dx, dy);
                 break;
             case BottomRight:
-                endx += dx;
-                endy += dy;
+//                endx += dx;
+//                endy += dy;
+                bottomRight.offset(dx, dy);
                 break;
             case InsideArea:
-                startx += dx;
-                starty += dy;
-                endx += dx;
-                endy += dy;
+//                startx += dx;
+//                starty += dy;
+//                endx += dx;
+//                endy += dy;
+                topLeft.offset(dx, dy);
+                bottomLeft.offset(dx, dy);
+                topRight.offset(dx, dy);
+                bottomRight.offset(dx, dy);
                 break;
         }
 
@@ -379,22 +387,48 @@ public class MotionRoiWidget extends View implements View.OnTouchListener,
         return result;
     }
 
+    private boolean validateCoordinates() {
+        boolean result = false;
+        // stay within crib limits
+        double maxWidth = getWidth() - ROI_MARGINS;
+        double maxHeight = getHeight() - ROI_MARGINS;
+
+        return result;
+    }
+
     @Nullable
     private Handle getSelectedHandle(float touchX, float touchY) {
 
-        if (isAdjacent(touchX, start.x) && isAdjacent(touchY, start.y)) {
+//        if (isAdjacent(touchX, start.x) && isAdjacent(touchY, start.y)) {
+//            return Handle.TopLeft;
+//        }
+//        if (isAdjacent(touchX, start.x) && isAdjacent(touchY, end.y)) {
+//            return Handle.BottomLeft;
+//        }
+//        if (isAdjacent(touchX, end.x) && isAdjacent(touchY, start.y)) {
+//            return Handle.TopRight;
+//        }
+//        if (isAdjacent(touchX, end.x) && isAdjacent(touchY, end.y)) {
+//            return Handle.BottomRight;
+//        }
+//        if (start.x < touchX && touchX < end.x && start.y < touchY && touchY < end.y) {
+//            return Handle.InsideArea;
+//        }
+
+        if (isAdjacent(touchX, topLeft.x) && isAdjacent(touchY, topLeft.y)) {
             return Handle.TopLeft;
         }
-        if (isAdjacent(touchX, start.x) && isAdjacent(touchY, end.y)) {
+        if (isAdjacent(touchX, bottomLeft.x) && isAdjacent(touchY, bottomLeft.y)) {
             return Handle.BottomLeft;
         }
-        if (isAdjacent(touchX, end.x) && isAdjacent(touchY, start.y)) {
+        if (isAdjacent(touchX, topRight.x) && isAdjacent(touchY, topRight.y)) {
             return Handle.TopRight;
         }
-        if (isAdjacent(touchX, end.x) && isAdjacent(touchY, end.y)) {
+        if (isAdjacent(touchX, bottomRight.x) && isAdjacent(touchY, bottomRight.y)) {
             return Handle.BottomRight;
         }
-        if (start.x < touchX && touchX < end.x && start.y < touchY && touchY < end.y) {
+        //todo: should be re-calculated
+        if (topLeft.x < touchX && touchX < topRight.x && topLeft.y < touchY && touchY < bottomLeft.y) {
             return Handle.InsideArea;
         }
         return null;
