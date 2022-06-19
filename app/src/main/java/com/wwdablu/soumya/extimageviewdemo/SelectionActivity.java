@@ -15,6 +15,7 @@ public class SelectionActivity extends AppCompatActivity {
         findViewById(R.id.btn_rect).setOnClickListener(v -> launch("rect"));
         findViewById(R.id.btn_free).setOnClickListener(v -> launch("free"));
         findViewById(R.id.btn_trapez).setOnClickListener(v -> launch("trapez"));
+        findViewById(R.id.btn_nanit).setOnClickListener(v -> launch("nanit"));
     }
 
     private void launch(String mode) {

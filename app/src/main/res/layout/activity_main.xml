@@ -39,6 +39,15 @@
         android:layout_alignParentTop="true"
         />
 
+    <com.wwdablu.soumya.extimageview.nanit.MotionRoiWidget
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/iv_display_nanit"
+        android:layout_above="@id/btn_capture"
+        android:visibility="gone"
+        android:layout_alignParentTop="true"
+        />
+
     <android.support.v7.widget.AppCompatImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

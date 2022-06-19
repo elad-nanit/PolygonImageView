@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.wwdablu.soumya.extimageview.BaseExtImageView;
 import com.wwdablu.soumya.extimageview.Result;
 import com.wwdablu.soumya.extimageview.free.ExtFreeImageView;
+import com.wwdablu.soumya.extimageview.nanit.MotionRoiCoords;
+import com.wwdablu.soumya.extimageview.nanit.MotionRoiWidget;
 import com.wwdablu.soumya.extimageview.rect.CropMode;
 import com.wwdablu.soumya.extimageview.rect.ExtRectImageView;
 import com.wwdablu.soumya.extimageview.rect.GridMode;
@@ -44,7 +46,34 @@ public class MainActivity extends AppCompatActivity {
             case "trapez":
                 demoTrapez();
                 break;
+
+            case "nanit":
+                demoNanit();
+                break;
         }
+    }
+
+    private void demoNanit() {
+
+        findViewById(R.id.iv_display).setVisibility(View.GONE);
+        findViewById(R.id.iv_display_free).setVisibility(View.GONE);
+        findViewById(R.id.iv_display_trapez).setVisibility(View.GONE);
+        findViewById(R.id.iv_display_nanit).setVisibility(View.VISIBLE);
+
+        final MotionRoiWidget motionRoiWidget = findViewById(R.id.iv_display_nanit);
+
+        motionRoiWidget.setInitialDimensions(new MotionRoiCoords(0, 0, 500, 500));
+
+        motionRoiWidget.registerListener(() -> {
+
+        });
+
+        motionRoiWidget.post(() -> {
+            motionRoiWidget.drawInitialCoords();
+            motionRoiWidget.showRoi();
+        });
+
+
     }
 
     private void demoTrapez() {
@@ -54,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.iv_display).setVisibility(View.GONE);
         findViewById(R.id.iv_display_free).setVisibility(View.GONE);
         findViewById(R.id.iv_display_trapez).setVisibility(View.VISIBLE);
+        findViewById(R.id.iv_display_nanit).setVisibility(View.GONE);
 
         final ExtTrapezImageView extTrapezImageView = findViewById(R.id.iv_display_trapez);
 
