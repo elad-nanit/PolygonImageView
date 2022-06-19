@@ -41,10 +41,17 @@ internal fun updateRoiCoordinates(
             bottomRight.coerce(dx, dy, maxWidth, maxHeight)
         }
         MotionRoiWidget.Handle.InsideArea -> {
-            topLeft.coerce(dx, dy, maxWidth, maxHeight)
-            topRight.coerce(dx, dy, maxWidth, maxHeight)
-            bottomLeft.coerce(dx, dy, maxWidth, maxHeight)
-            bottomRight.coerce(dx, dy, maxWidth, maxHeight)
+            val points = listOf(topLeft, topRight, bottomLeft, bottomRight)
+            //by this check, we avoid situation that points are updated partially on being moved toward edges
+            if (points.all {
+                    (it.x + dx) in MotionRoiWidget.ROI_MARGINS..maxWidth
+                            && (it.y + dy) in MotionRoiWidget.ROI_MARGINS..maxHeight
+                }) {
+                topLeft.coerce(dx, dy, maxWidth, maxHeight)
+                topRight.coerce(dx, dy, maxWidth, maxHeight)
+                bottomLeft.coerce(dx, dy, maxWidth, maxHeight)
+                bottomRight.coerce(dx, dy, maxWidth, maxHeight)
+            }
         }
     }
     motionRoi.invalidate()
